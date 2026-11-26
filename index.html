@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Checker</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="checker">
+        <header>
+            <h1>Word Checker</h1>
+            <p>Check a word against SOWPODS and see its neighbours.</p>
+        </header>
+
+        <p id="dictionary-status" role="status">Loading dictionary...</p>
+        <div id="file-choice" hidden>
+            <label for="dictionary-file">Choose the local sowpods.txt file:</label>
+            <input id="dictionary-file" type="file" accept=".txt,text/plain">
+        </div>
+
+        <form id="check-form">
+            <label for="word">Word</label>
+            <div class="search">
+                <input id="word" name="word" type="text" autocomplete="off"
+                    autocapitalize="characters" spellcheck="false" required>
+                <button id="check-button" type="submit" disabled>Check</button>
+            </div>
+        </form>
+
+        <p id="result" class="result" role="status" aria-live="polite"></p>
+        <section id="neighbours" aria-labelledby="neighbours-heading" hidden>
+            <h2 id="neighbours-heading">Nearby words</h2>
+            <ol id="word-list" aria-label="Dictionary entries around the checked word"></ol>
+        </section>
+    </main>
+    <script src="main.js" defer></script>
+</body>
+</html>
