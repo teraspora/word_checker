@@ -5,10 +5,36 @@ const form = document.querySelector('#check-form');
 const wordInput = document.querySelector('#word');
 const checkButton = document.querySelector('#check-button');
 const result = document.querySelector('#result');
+const details = document.querySelector('#details');
 const neighbours = document.querySelector('#neighbours');
 const wordList = document.querySelector('#word-list');
+const definition = document.querySelector('#definition');
+const definition_text = document.querySelector('#definition-text');
+const definition_credit = document.querySelector('#definition-credit');
+const definition_source = document.querySelector('#definition-source');
 
 let words = [];
+let definition_request = 0;
+
+async function get_definition(word) {
+    const response = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`
+    );
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Dictionary API: HTTP ${response.status}`);
+
+    const entries = await response.json();
+    for (const entry of entries) {
+        for (const meaning of entry.meanings ?? []) {
+            for (const item of meaning.definitions ?? []) {
+                if (typeof item.definition === 'string' && item.definition.trim()) {
+                    return item.definition;
+                }
+            }
+        }
+    }
+    return null;
+}
 
 function loadDictionary(text) {
     const entries = text.split(/\r?\n/).map((word) => word.trim()).filter(Boolean);
@@ -22,6 +48,7 @@ function loadDictionary(text) {
     status.textContent = `Dictionary loaded (${words.length.toLocaleString()} words).`;
     fileChoice.hidden = true;
     checkButton.disabled = false;
+    update_word();
 }
 
 async function loadDefaultDictionary() {
@@ -54,14 +81,27 @@ fileInput.addEventListener('change', async () => {
     }
 });
 
-form.addEventListener('submit', (event) => {
-    event.preventDefault();
+function clear_definition() {
+    definition_request++;
+    definition.hidden = true;
+    definition_credit.hidden = true;
+    details.classList.remove('has-definition');
+}
+
+function update_word() {
     const word = wordInput.value.trim().toUpperCase();
+    if (!word || words.length === 0) {
+        result.textContent = '';
+        result.className = 'result';
+        neighbours.hidden = true;
+        return null;
+    }
+
     if (!/^[A-Z]+$/.test(word)) {
         result.textContent = 'Enter a word using letters A–Z only.';
         result.className = 'result invalid';
         neighbours.hidden = true;
-        return;
+        return null;
     }
 
     let low = 0;
@@ -94,6 +134,39 @@ form.addEventListener('submit', (event) => {
     words.slice(low + (valid ? 1 : 0), low + (valid ? 11 : 10))
         .forEach((entry) => appendWord(entry));
     neighbours.hidden = false;
+    return { word, valid };
+}
+
+wordInput.addEventListener('input', () => {
+    clear_definition();
+    update_word();
+});
+
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    wordInput.focus();
+    wordInput.select();
+    clear_definition();
+    const request = definition_request;
+    const checked_word = update_word();
+
+    if (checked_word && checked_word.valid) {
+        definition.hidden = false;
+        details.classList.add('has-definition');
+        definition_text.textContent = 'Loading definition...';
+        try {
+            const text = await get_definition(checked_word.word);
+            if (request !== definition_request) return;
+            definition_text.textContent = text ?? 'No definition available.';
+            if (text) {
+                definition_source.href = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(checked_word.word.toLowerCase())}`;
+                definition_credit.hidden = false;
+            }
+        } catch (error) {
+            if (request !== definition_request) return;
+            definition_text.textContent = `Could not load definition: ${error.message}`;
+        }
+    }
 });
 
 loadDefaultDictionary();

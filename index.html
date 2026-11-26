@@ -10,7 +10,7 @@
     <main class="checker">
         <header>
             <h1>Word Checker</h1>
-            <p>Check a word against SOWPODS and see its neighbours.</p>
+            <p>Type a word to see its SOWPODS neighbours, then press Check for its definition.</p>
         </header>
 
         <p id="dictionary-status" role="status">Loading dictionary...</p>
@@ -29,10 +29,24 @@
         </form>
 
         <p id="result" class="result" role="status" aria-live="polite"></p>
-        <section id="neighbours" aria-labelledby="neighbours-heading" hidden>
-            <h2 id="neighbours-heading">Nearby words</h2>
-            <ol id="word-list" aria-label="Dictionary entries around the checked word"></ol>
-        </section>
+        <div id="details" class="details">
+            <section id="neighbours" aria-labelledby="neighbours-heading" hidden>
+                <h2 id="neighbours-heading">Nearby words</h2>
+                <ol id="word-list" aria-label="Dictionary entries around the checked word"></ol>
+            </section>
+            <section id="definition" aria-labelledby="definition-heading" hidden>
+                <h2 id="definition-heading">Definition</h2>
+                <div class="definition-panel">
+                    <p id="definition-text" role="status" aria-live="polite"></p>
+                    <p id="definition-credit" class="definition-credit" hidden>
+                        Source: <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary contributors</a>,
+                        via <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Free Dictionary API</a>;
+                        <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>.
+                        <a id="definition-source" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Entry source details</a>.
+                    </p>
+                </div>
+            </section>
+        </div>
     </main>
     <script src="main.js" defer></script>
 </body>
