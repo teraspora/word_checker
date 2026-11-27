@@ -12,28 +12,64 @@ const definition = document.querySelector('#definition');
 const definition_text = document.querySelector('#definition-text');
 const definition_credit = document.querySelector('#definition-credit');
 const definition_source = document.querySelector('#definition-source');
+const wiktionary_source = document.querySelector('#wiktionary-source');
 
 let words = [];
 let definition_request = 0;
+
+async function get_wiktionary_definition(word) {
+    const response = await fetch(
+        `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word.toLowerCase())}`,
+        { headers: { 'Api-User-Agent': 'WordChecker/1.0' } }
+    );
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Wiktionary: HTTP ${response.status}`);
+
+    const entries = await response.json();
+    for (const entry of entries.en ?? []) {
+        for (const item of entry.definitions ?? []) {
+            if (typeof item.definition !== 'string') continue;
+            const template = document.createElement('template');
+            template.innerHTML = item.definition;
+            const text = template.content.textContent.trim();
+            if (!text) continue;
+            const base_link = template.content.querySelector('.form-of-definition .form-of-definition-link a[title]');
+            return { text, base_word: base_link?.getAttribute('title') ?? null };
+        }
+    }
+    return null;
+}
 
 async function get_definition(word) {
     const response = await fetch(
         `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`
     );
-    if (response.status === 404) return null;
-    if (!response.ok) throw new Error(`Dictionary API: HTTP ${response.status}`);
-
-    const entries = await response.json();
-    for (const entry of entries) {
-        for (const meaning of entry.meanings ?? []) {
-            for (const item of meaning.definitions ?? []) {
-                if (typeof item.definition === 'string' && item.definition.trim()) {
-                    return item.definition;
+    if (response.status !== 404) {
+        if (!response.ok) throw new Error(`Dictionary API: HTTP ${response.status}`);
+        const entries = await response.json();
+        for (const entry of entries) {
+            for (const meaning of entry.meanings ?? []) {
+                for (const item of meaning.definitions ?? []) {
+                    if (typeof item.definition === 'string' && item.definition.trim()) {
+                        return item.definition;
+                    }
                 }
             }
         }
     }
-    return null;
+
+    const entry = await get_wiktionary_definition(word);
+    if (!entry) return null;
+    if (!entry.base_word || entry.base_word.toLowerCase() === word.toLowerCase()) return entry.text;
+
+    try {
+        const base_entry = await get_wiktionary_definition(entry.base_word);
+        if (!base_entry) return `${entry.text} (Base-word definition unavailable.)`;
+        const base_source = `https://en.wiktionary.org/wiki/${encodeURIComponent(entry.base_word)}`;
+        return `${entry.text} — ${entry.base_word}: ${base_entry.text} (Source: ${base_source})`;
+    } catch (error) {
+        return `${entry.text} (Base-word lookup failed: ${error.message})`;
+    }
 }
 
 function loadDictionary(text) {
@@ -160,6 +196,8 @@ form.addEventListener('submit', async (event) => {
             definition_text.textContent = text ?? 'No definition available.';
             if (text) {
                 definition_source.href = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(checked_word.word.toLowerCase())}`;
+                wiktionary_source.href =
+                    `https://en.wiktionary.org/wiki/${encodeURIComponent(checked_word.word.toLowerCase())}`;
                 definition_credit.hidden = false;
             }
         } catch (error) {

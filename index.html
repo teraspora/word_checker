@@ -23,7 +23,7 @@
             <label for="word">Word</label>
             <div class="search">
                 <input id="word" name="word" type="text" autocomplete="off"
-                    autocapitalize="characters" spellcheck="false" required>
+                    autocapitalize="characters" spellcheck="false" autofocus required>
                 <button id="check-button" type="submit" disabled>Check</button>
             </div>
         </form>
@@ -39,10 +39,11 @@
                 <div class="definition-panel">
                     <p id="definition-text" role="status" aria-live="polite"></p>
                     <p id="definition-credit" class="definition-credit" hidden>
-                        Source: <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary contributors</a>,
-                        via <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Free Dictionary API</a>;
-                        <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>.
-                        <a id="definition-source" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Entry source details</a>.
+                        Sources: <a id="wiktionary-source" href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary contributors</a>
+                        (<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>),
+                        and <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Free Dictionary API</a>
+                        (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>).
+                        <a id="definition-source" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">API entry details</a>.
                     </p>
                 </div>
             </section>
